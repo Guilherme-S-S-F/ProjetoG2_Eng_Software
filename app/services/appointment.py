@@ -15,3 +15,6 @@ def get(db: Session, appointment_id: int):
 def list(db: Session):
     return db.query(Appointment).all()
 
+def delete(db: Session, appointment_id: int):
+    return db.query(Appointment).filter(Appointment.id == appointment_id).delete()
+

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from app.db import Base
 
 class Appointment(Base):
@@ -8,3 +8,4 @@ class Appointment(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     date = Column(DateTime, index=True)
     description = Column(String, index=True)
+    active = Column(Boolean, index=True)

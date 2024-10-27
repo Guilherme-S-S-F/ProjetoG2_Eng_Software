@@ -11,6 +11,7 @@ class Appointment(BaseModel):
     user_id: int
     date: datetime
     description: str
+    active: bool
 
     class Config:
         from_attributes = True
