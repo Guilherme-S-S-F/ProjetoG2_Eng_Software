@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.schemas.user import UserCreate
-from app.utils.criptography import hash_password, verify_password
+from models.user import User
+from schemas.user import UserCreate
+from utils.criptography import hash_password, verify_password
 
 def create(db: Session, user: UserCreate):
     db_user = User(**user.model_dump())
@@ -22,3 +22,26 @@ def login(db: Session, email: str, password: str):
     if verify_password(password, user.password):
         return user
     return None
+
+from sqlalchemy.orm import Session
+from models.user import User
+from schemas.user import UserUpdate
+
+def get(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
+
+def update(db: Session, user_id: int, user_update: UserUpdate):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if not db_user:
+        return None
+    # Atualiza apenas os campos fornecidos
+    for key, value in user_update.dict(exclude_unset=True).items():
+        setattr(db_user, key, value)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def delete(db: Session, user_id: int):
+    print(user_id)
+    db.query(User).filter(User.id == user_id).delete()
+    return db.commit()

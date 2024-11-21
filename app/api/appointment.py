@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.services import appointment as service_appointment
-from app.schemas.appointment import Appointment, AppointmentCreate
-from app.db import SessionLocal
+from services import appointment as service_appointment
+from schemas.appointment import Appointment, AppointmentCreate, AppointmentUpdateDTO
+from db import SessionLocal
 
 router = APIRouter()
 
@@ -24,15 +24,24 @@ def get_appointment(appointment_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Appointment not found")
     return db_appointment
 
-@router.get("/users/", response_model=list[Appointment])
-def list_user(db: Session = Depends(get_db)):
+@router.get("/appointments/", response_model=list[Appointment])
+def list_appointments(db: Session = Depends(get_db)):
     db_appointments = service_appointment.list(db)
     if db_appointments is None:
         raise HTTPException(status_code=404, detail="Users not found")
     return db_appointments
 
-@router.delete("/users/{appointment_id}")
-def delete(appointment_id: int, db: Session = Depends(get_db)):
-    service_appointment.delete(appointment_id, db)
-
-
+@router.patch("/appointments/{appointment_id}", response_model=Appointment)
+def update_appointment(
+    appointment_id: int, 
+    appointment_update: AppointmentUpdateDTO, 
+    db: Session = Depends(get_db)
+):
+    # Verifica se o agendamento existe
+    db_appointment = service_appointment.get(db, appointment_id=appointment_id)
+    if db_appointment is None:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    # Atualiza o agendamento com os dados fornecidos
+    db_appointment = service_appointment.update(db, appointment_id=appointment_id, appointment_update=appointment_update)
+    return db_appointment

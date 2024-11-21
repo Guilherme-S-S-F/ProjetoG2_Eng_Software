@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.services import user as service_user
-from app.schemas.user import User, UserCreate, UserResponse
-from app.db import SessionLocal
+from services import user as service_user
+from schemas.user import LoginRequest, UserCreate, UserResponse, UserUpdate
+from db import SessionLocal
 
 router = APIRouter()
 
@@ -32,11 +32,25 @@ def list_user(db: Session = Depends(get_db)):
     return db_users
 
 
-@router.get("/users/login", response_model=UserResponse)
-def login(email: str, password: str, db: Session = Depends(get_db)):
-    print("teste")
-    user_logged = service_user.login(db, email, password)
+@router.post("/users/login", response_model=UserResponse)
+def login(data:LoginRequest, db: Session = Depends(get_db)):
+    print(data)
+    user_logged = service_user.login(db, data.email, data.password)
     if user_logged is None:
         raise HTTPException(status_code=403, detail="Email ou senha estão errados")
     
     return user_logged
+
+
+@router.put("/user/{user_id}", response_model=UserResponse)
+def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_db)):
+    db_user = service_user.get(db, user_id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    updated_user = service_user.update(db=db, user_id=user_id, user_update=user_update)
+    return updated_user
+
+
+@router.delete("/user/{user_id}")
+def delete(user_id: int, db: Session = Depends(get_db)):
+    service_user.delete(db, user_id)

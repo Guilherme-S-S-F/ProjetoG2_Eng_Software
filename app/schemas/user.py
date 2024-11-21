@@ -1,5 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from enum import Enum
+from typing import Optional
+
+class UserUpdate(BaseModel):
+    name: Optional[str]
+    email: Optional[EmailStr]
+    phone: Optional[str]
+    role: Optional[str]  # Modifique conforme necessário para o tipo de role
+
+    class Config:
+        orm_mode = True
 
 class RoleEnum(str, Enum):
     ADMIN = "admin"
@@ -32,3 +42,8 @@ class User(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
